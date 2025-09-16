@@ -1,0 +1,9 @@
+```gitignore
+# Compiled Java class files
+*.class
+
+# VS Code settings folder
+.vscode/
+
+# Logs
+*.log
