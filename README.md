@@ -126,5 +126,3 @@ GroceryShopProject/
 **Spandan Sen** – B.Tech CSE, STCET (MAKAUT)
 
 ---
-
-Do you want me to do that too?
