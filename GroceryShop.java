@@ -1,148 +1,165 @@
-import java.util.Locale;
-import java.util.Scanner;
+import java.util.*;
 
-public class GroceryShop {
+// Item class (Encapsulation)
+class Item {
+    private String name;
+    private float price;
+    private int stock;
 
-    // List of items available in the store
-    static String[] items = {
-            "Rice", "Wheat", "Sugar", "Salt", "Oil",
-            "Milk", "Eggs", "Bread", "Butter", "Cheese"
-    };
-
-    // Unit prices corresponding to each item
-    static float[] prices = {
-            45.5f, 38.0f, 55.0f, 20.0f, 120.0f,
-            30.0f, 6.0f, 25.0f, 50.0f, 70.0f
-    };
-
-    // Available stock for each item
-    static int[] stock = {
-            50, 40, 60, 100, 30,
-            80, 200, 70, 40, 25
-    };
-
-    /**
-     * Search for an item in the inventory.
-     * @param itemName The name of the item to search.
-     * @return index position if found, -1 otherwise.
-     */
-    public static int searchItem(String itemName) {
-        for (int i = 0; i < items.length; i++) {
-            if (items[i].equalsIgnoreCase(itemName)) {
-                return i;
-            }
-        }
-        return -1; // Not found
+    public Item(String name, float price, int stock) {
+        this.name = name;
+        this.price = price;
+        this.stock = stock;
     }
 
-    /**
-     * Calculate the average price of all items.
-     */
-    public static float calculateAveragePrice() {
+    public String getName() { return name; }
+    public float getPrice() { return price; }
+    public int getStock() { return stock; }
+
+    public void reduceStock(int qty) {
+        stock -= qty;
+    }
+}
+
+// Shop class (Handles inventory & operations)
+class Shop {
+    private ArrayList<Item> items = new ArrayList<>();
+
+    public void addItem(Item item) {
+        items.add(item);
+    }
+
+    public Item searchItem(String name) {
+        for (Item item : items) {
+            if (item.getName().equalsIgnoreCase(name)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public void displayInventory() {
+        System.out.println("\nAvailable Items:");
+        for (Item item : items) {
+            System.out.println(item.getName() + " - " +
+                    item.getPrice() + " Rs (Stock: " + item.getStock() + ")");
+        }
+    }
+
+    public float calculateAveragePrice() {
         float sum = 0;
-        for (float price : prices) {
-            sum += price;
+        for (Item item : items) {
+            sum += item.getPrice();
         }
-        return sum / prices.length;
+        return sum / items.size();
     }
 
-    /**
-     * Print all items priced below a given threshold.
-     */
-    public static void filterItemsBelowPrice(float limit) {
+    public void filterItemsBelowPrice(float limit) {
         System.out.println("\nItems priced below " + limit + ":");
-        for (int i = 0; i < items.length; i++) {
-            if (prices[i] < limit) {
-                System.out.println(items[i] + " - " + prices[i] + " Rs");
+        for (Item item : items) {
+            if (item.getPrice() < limit) {
+                System.out.println(item.getName() + " - " + item.getPrice() + " Rs");
             }
         }
     }
+}
 
-    /**
-     * Apply discount rules on the total bill.
-     * @param total The original total bill amount.
-     * @return The discounted amount.
-     */
-    public static float applyDiscount(float total) {
+// Billing class (Handles billing logic)
+class Billing {
+    private float total = 0;
+
+    public void addItem(Item item, int qty) {
+        if (qty > item.getStock()) {
+            System.out.println("⚠ Only " + item.getStock() + " units available. Adding available stock.");
+            qty = item.getStock();
+        }
+
+        float cost = item.getPrice() * qty;
+        total += cost;
+        item.reduceStock(qty);
+
+        System.out.println("Added " + qty + " x " + item.getName() +
+                " @ " + item.getPrice() + " = " + cost + " Rs");
+    }
+
+    public float applyDiscount() {
         if (total > 1000) {
             System.out.println("🎉 Discount Applied: 10% off");
-            return total * 0.90f;
+            total *= 0.90f;
         } else if (total > 500) {
             System.out.println("🎉 Discount Applied: 5% off");
-            return total * 0.95f;
+            total *= 0.95f;
         }
         return total;
     }
 
-    /**
-     * Display available items with their prices and stock.
-     */
-    public static void displayInventory() {
-        System.out.println("\nAvailable Items:");
-        for (int i = 0; i < items.length; i++) {
-            System.out.println(items[i] + " - " + prices[i] + " Rs (Stock: " + stock[i] + ")");
-        }
+    public float getTotal() {
+        return total;
     }
+}
 
+// Main class (Driver)
+public class GroceryShopOOP {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in).useLocale(Locale.US);
+        Scanner sc = new Scanner(System.in);
+
+        // Create shop and add items
+        Shop shop = new Shop();
+        shop.addItem(new Item("Rice", 45.5f, 50));
+        shop.addItem(new Item("Wheat", 38.0f, 40));
+        shop.addItem(new Item("Sugar", 55.0f, 60));
+        shop.addItem(new Item("Salt", 20.0f, 100));
+        shop.addItem(new Item("Oil", 120.0f, 30));
+        shop.addItem(new Item("Milk", 30.0f, 80));
+        shop.addItem(new Item("Eggs", 6.0f, 200));
+        shop.addItem(new Item("Bread", 25.0f, 70));
+        shop.addItem(new Item("Butter", 50.0f, 40));
+        shop.addItem(new Item("Cheese", 70.0f, 25));
+
         System.out.println("======================================");
         System.out.println("    Welcome to the Grocery Shop App    ");
         System.out.println("======================================");
 
-        // Continuous loop for multiple customers
         while (true) {
-            float totalBill = 0;
-            displayInventory();
+            Billing bill = new Billing();
+            shop.displayInventory();
 
             System.out.println("\nStart shopping...");
-            System.out.println("Type 'Complete' to finish your purchase.");
-            System.out.println("Type 'Exit' to leave the shop.");
+            System.out.println("Type 'Complete' to finish purchase.");
+            System.out.println("Type 'Exit' to leave.");
 
-            // Loop for adding items to the current bill
             while (true) {
                 System.out.print("\nEnter item name: ");
                 String itemName = sc.nextLine();
 
                 if (itemName.equalsIgnoreCase("Exit")) {
-                    System.out.println("Thank you for visiting! Goodbye.");
+                    System.out.println("Thank you for visiting!");
                     return;
                 }
+
                 if (itemName.equalsIgnoreCase("Complete")) {
-                    break; // Finish this customer's shopping
+                    break;
                 }
 
-                int index = searchItem(itemName);
-                if (index == -1) {
-                    System.out.println("❌ Item not found. Please try again.");
+                Item item = shop.searchItem(itemName);
+                if (item == null) {
+                    System.out.println("❌ Item not found.");
                     continue;
                 }
 
                 System.out.print("Enter quantity: ");
                 int qty = sc.nextInt();
-                sc.nextLine(); // Consume newline
+                sc.nextLine();
 
-                if (qty > stock[index]) {
-                    System.out.println("⚠ Only " + stock[index] + " units available. Adding available stock.");
-                    qty = stock[index];
-                }
-
-                float itemCost = prices[index] * qty;
-                totalBill += itemCost;
-                stock[index] -= qty;
-
-                System.out.println("Added " + qty + " x " + items[index] +
-                        " @ " + prices[index] + " = " + itemCost + " Rs");
+                bill.addItem(item, qty);
             }
 
-            // Apply discounts and show final bill
-            totalBill = applyDiscount(totalBill);
-            System.out.println("\n💰 Final Total: " + totalBill + " Rs");
+            float finalTotal = bill.applyDiscount();
+            System.out.println("\n💰 Final Total: " + finalTotal + " Rs");
 
-            // Show extra features
             System.out.println("\n--- Shop Insights ---");
-            System.out.println("Average Price of Items: " + calculateAveragePrice() + " Rs");
-            filterItemsBelowPrice(50);
+            System.out.println("Average Price: " + shop.calculateAveragePrice() + " Rs");
+            shop.filterItemsBelowPrice(50);
         }
     }
 }
